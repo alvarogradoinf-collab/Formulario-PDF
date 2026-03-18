@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Acta de Formación – melillasocial.es</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,600;0,700&display=swap');
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'EB Garamond', Georgia, serif;
+      background: #f0f0f0;
+      color: #222;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .page {
+      width: 210mm;
+      min-height: 297mm;
+      background: white;
+      padding: 30mm 30mm 25mm 30mm;
+      box-shadow: 0 2px 20px rgba(0, 0, 0, 0.15);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .title {
+      text-align: center;
+      font-size: 20pt;
+      font-weight: 700;
+      color: #2B579A;
+      margin-bottom: 4px;
+    }
+
+    .subtitle {
+      text-align: center;
+      font-size: 12pt;
+      color: #555;
+      margin-bottom: 24px;
+    }
+
+    .section-header {
+      font-size: 14pt;
+      font-weight: 700;
+      color: #2B579A;
+      border-bottom: 1px solid #2B579A;
+      padding-bottom: 4px;
+      margin-bottom: 10px;
+    }
+
+    .object-text {
+      font-size: 11pt;
+      line-height: 1.6;
+      text-align: justify;
+      margin-bottom: 28px;
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 28px;
+    }
+
+    .data-table td {
+      border: 1px solid #333;
+      padding: 6px 10px;
+      font-size: 11pt;
+      height: 32px;
+    }
+
+    .data-table .label-cell {
+      background: #E8E8E8;
+      font-weight: 700;
+      width: 170px;
+    }
+
+    .data-table input {
+      width: 100%;
+      border: none;
+      outline: none;
+      font-family: 'EB Garamond', Georgia, serif;
+      font-size: 11pt;
+      background: transparent;
+      padding: 2px 0;
+    }
+
+    .firma-text {
+      font-size: 10.5pt;
+      color: #555;
+      margin-bottom: 14px;
+    }
+
+    .firma-container {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      flex-grow: 1;
+    }
+
+    .firma-box {
+      flex: 1;
+      border: 1px solid #333;
+      display: flex;
+      flex-direction: column;
+      min-height: 120px;
+    }
+
+    .firma-box-header {
+      text-align: center;
+      font-weight: 700;
+      font-size: 11pt;
+      padding: 8px 0;
+      border-bottom: 1px solid #ddd;
+      background: #fafafa;
+    }
+
+    .firma-box-body {
+      flex: 1;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 90px;
+    }
+
+    canvas.sig-canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      cursor: crosshair;
+      touch-action: none;
+    }
+
+    .sig-placeholder {
+      color: #ccc;
+      font-size: 10pt;
+      pointer-events: none;
+      position: absolute;
+    }
+
+    .clear-btn {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      background: #e74c3c;
+      color: white;
+      border: none;
+      border-radius: 3px;
+      font-size: 8pt;
+      padding: 2px 6px;
+      cursor: pointer;
+      opacity: 0.7;
+      z-index: 10;
+    }
+
+    .clear-btn:hover {
+      opacity: 1;
+    }
+
+    .date-line {
+      text-align: center;
+      font-size: 11pt;
+      margin-top: auto;
+      padding-top: 16px;
+    }
+
+    .date-line input {
+      border: none;
+      border-bottom: 1px solid #333;
+      outline: none;
+      font-family: 'EB Garamond', Georgia, serif;
+      font-size: 11pt;
+      text-align: center;
+      background: transparent;
+    }
+
+    .date-line input.city {
+      width: 160px;
+    }
+
+    .date-line input.day {
+      width: 40px;
+    }
+
+    .date-line input.month {
+      width: 100px;
+    }
+
+    .controls {
+      margin-top: 20px;
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .btn {
+      font-family: 'EB Garamond', Georgia, serif;
+      font-size: 13pt;
+      padding: 10px 28px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-primary {
+      background: #2B579A;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #1d3d6f;
+    }
+
+    .btn-success {
+      background: #27ae60;
+      color: white;
+    }
+
+    .btn-success:hover {
+      background: #1e8449;
+    }
+
+    .btn-secondary {
+      background: #e8e8e8;
+      color: #333;
+    }
+
+    .btn-secondary:hover {
+      background: #d0d0d0;
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .instructions {
+      margin-top: 14px;
+      font-size: 10pt;
+      color: #888;
+      text-align: center;
+      max-width: 600px;
+    }
+
+    .status-msg {
+      margin-top: 12px;
+      padding: 10px 20px;
+      border-radius: 6px;
+      font-size: 11pt;
+      text-align: center;
+      display: none;
+    }
+
+    .status-msg.success {
+      display: block;
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+
+    .status-msg.error {
+      display: block;
+      background: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+
+    .status-msg.loading {
+      display: block;
+      background: #fff3cd;
+      color: #856404;
+      border: 1px solid #ffeeba;
+    }
+
+    @media print {
+      body {
+        background: white;
+        padding: 0;
+      }
+
+      .page {
+        box-shadow: none;
+        padding: 20mm;
+      }
+
+      .controls,
+      .instructions,
+      .clear-btn,
+      .status-msg {
+        display: none !important;
+      }
+
+      .sig-placeholder {
+        display: none;
+      }
+    }
+
+    @media (max-width: 800px) {
+      .page {
+        width: 100%;
+        min-height: auto;
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="page" id="acta-page">
+    <div class="title">ACTA DE FORMACIÓN</div>
+    <div class="subtitle">Formación en el uso de la plataforma melillasocial.es</div>
+
+    <div class="section-header">1. Objeto de la visita</div>
+    <div class="object-text">
+      La presente hoja acredita que se ha realizado una visita de formación en el uso de la plataforma
+      melillasocial.es, destinada a la justificación digital de subvenciones. Durante la sesión se han
+      creado las cuentas de acceso de la entidad y se ha explicado el funcionamiento de la aplicación.
+    </div>
+
+    <div class="section-header">2. Datos de la entidad</div>
+    <table class="data-table">
+      <tr>
+        <td class="label-cell">Nombre de la entidad</td>
+        <td><input type="text" id="f_nombre" required></td>
+      </tr>
+      <tr>
+        <td class="label-cell">NIF</td>
+        <td><input type="text" id="f_nif"></td>
+      </tr>
+      <tr>
+        <td class="label-cell">Representante entidad</td>
+        <td><input type="text" id="f_rep"></td>
+      </tr>
+      <tr>
+        <td class="label-cell">Teléfono de contacto</td>
+        <td><input type="text" id="f_tel"></td>
+      </tr>
+      <tr>
+        <td class="label-cell">Correo electrónico</td>
+        <td><input type="text" id="f_email"></td>
+      </tr>
+    </table>
+
+    <div class="section-header">3. Firmas</div>
+    <div class="firma-text">Con la presente firma se confirma que la visita de formación se ha realizado en los términos
+      indicados.</div>
+
+    <div class="firma-container">
+      <div class="firma-box">
+        <div class="firma-box-header">Firma del formador</div>
+        <div class="firma-box-body">
+          <canvas class="sig-canvas" id="sig1"></canvas>
+          <span class="sig-placeholder" id="ph1">Firme aquí</span>
+          <button class="clear-btn" onclick="clearSig('sig1','ph1')">Borrar</button>
+        </div>
+      </div>
+      <div class="firma-box">
+        <div class="firma-box-header">Firma y sello de la entidad</div>
+        <div class="firma-box-body">
+          <canvas class="sig-canvas" id="sig2"></canvas>
+          <span class="sig-placeholder" id="ph2">Firme aquí</span>
+          <button class="clear-btn" onclick="clearSig('sig2','ph2')">Borrar</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="date-line">
+      En <input type="text" class="city" id="f_city" placeholder="Ciudad">,
+      a <input type="text" class="day" id="f_day" placeholder="__">
+      de <input type="text" class="month" id="f_month" placeholder="mes">
+      de 2026
+    </div>
+  </div>
+
+  <div class="controls">
+    <button class="btn btn-success" id="btnEnviar" onclick="enviarActa()">✉ Enviar acta firmada</button>
+    <button class="btn btn-primary" onclick="downloadPDF()">⬇ Descargar PDF</button>
+    <button class="btn btn-secondary" onclick="window.print()">🖨 Imprimir</button>
+  </div>
+
+  <div class="instructions">
+    Rellene los campos, firme en los recuadros con el ratón o el dedo, y pulse <strong>"Enviar acta firmada"</strong>
+    para remitirla directamente al formador.
+  </div>
+
+  <div class="status-msg" id="statusMsg"></div>
+
+  <script>
+    // =============================================
+    // CONFIGURACIÓN: Pega aquí la URL de tu Google Apps Script
+    // =============================================
+    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyWjPsiDdOFCNOpyNmDYqMk1nqQZ--wTrr7iwNsHhe7PuXi10KkgYQbuzzDWbbsHHJp/exec";
+    // =============================================
+
+    // Signature canvas
+    function initCanvas(canvasId, placeholderId) {
+      const canvas = document.getElementById(canvasId);
+      const ph = document.getElementById(placeholderId);
+      let drawing = false, ctx;
+
+      function resize() {
+        const rect = canvas.parentElement.getBoundingClientRect();
+        const dpr = window.devicePixelRatio || 1;
+        const tmp = document.createElement('canvas');
+        tmp.width = canvas.width; tmp.height = canvas.height;
+        tmp.getContext('2d').drawImage(canvas, 0, 0);
+        canvas.width = rect.width * dpr;
+        canvas.height = rect.height * dpr;
+        canvas.style.width = rect.width + 'px';
+        canvas.style.height = rect.height + 'px';
+        ctx = canvas.getContext('2d');
+        ctx.scale(dpr, dpr);
+        ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+        ctx.lineWidth = 1.5; ctx.strokeStyle = '#000';
+        if (tmp.width > 0 && tmp.height > 0) {
+          ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0);
+          ctx.drawImage(tmp, 0, 0, tmp.width, tmp.height, 0, 0, canvas.width, canvas.height);
+          ctx.restore();
+        }
+      }
+
+      function getPos(e) {
+        const rect = canvas.getBoundingClientRect();
+        const t = e.touches ? e.touches[0] : e;
+        return { x: t.clientX - rect.left, y: t.clientY - rect.top };
+      }
+
+      function start(e) { e.preventDefault(); drawing = true; ph.style.display = 'none'; const p = getPos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); }
+      function draw(e) { if (!drawing) return; e.preventDefault(); const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); }
+      function stop(e) { if (drawing) { e.preventDefault(); drawing = false; } }
+
+      canvas.addEventListener('mousedown', start);
+      canvas.addEventListener('mousemove', draw);
+      canvas.addEventListener('mouseup', stop);
+      canvas.addEventListener('mouseleave', stop);
+      canvas.addEventListener('touchstart', start, { passive: false });
+      canvas.addEventListener('touchmove', draw, { passive: false });
+      canvas.addEventListener('touchend', stop, { passive: false });
+      resize();
+      window.addEventListener('resize', resize);
+    }
+
+    function clearSig(cId, pId) {
+      const c = document.getElementById(cId);
+      c.getContext('2d').clearRect(0, 0, c.width, c.height);
+      document.getElementById(pId).style.display = '';
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      initCanvas('sig1', 'ph1');
+      initCanvas('sig2', 'ph2');
+    });
+
+    // Generate PDF as base64
+    async function generatePDFBase64() {
+      const page = document.getElementById('acta-page');
+      document.querySelectorAll('.clear-btn').forEach(b => b.style.display = 'none');
+      document.querySelectorAll('.sig-placeholder').forEach(p => p.style.visibility = 'hidden');
+
+      const inputs = page.querySelectorAll('input');
+      inputs.forEach(inp => {
+        const span = document.createElement('span');
+        span.textContent = inp.value || '';
+        span.style.fontFamily = "'EB Garamond', Georgia, serif";
+        span.style.fontSize = '11pt';
+        if (inp.classList.contains('city') || inp.classList.contains('day') || inp.classList.contains('month')) {
+          span.style.borderBottom = '1px solid #333';
+          span.style.display = 'inline-block';
+          span.style.minWidth = inp.offsetWidth + 'px';
+          span.style.textAlign = 'center';
+        }
+        inp.parentNode.insertBefore(span, inp);
+        inp.style.display = 'none';
+        span.dataset.tempSpan = 'true';
+      });
+
+      try {
+        const canvas = await html2canvas(page, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        const imgData = canvas.toDataURL('image/jpeg', 0.95);
+        const pdfW = 210;
+        const pdfH = (canvas.height * pdfW) / canvas.width;
+        pdf.addImage(imgData, 'JPEG', 0, 0, pdfW, Math.min(pdfH, 297));
+        return pdf.output('datauristring').split(',')[1]; // base64 only
+      } finally {
+        page.querySelectorAll('[data-temp-span]').forEach(s => s.remove());
+        inputs.forEach(inp => inp.style.display = '');
+        document.querySelectorAll('.clear-btn').forEach(b => b.style.display = '');
+        document.querySelectorAll('.sig-placeholder').forEach(p => p.style.visibility = '');
+      }
+    }
+
+    // Download PDF locally
+    async function downloadPDF() {
+      const page = document.getElementById('acta-page');
+      document.querySelectorAll('.clear-btn').forEach(b => b.style.display = 'none');
+      document.querySelectorAll('.sig-placeholder').forEach(p => p.style.visibility = 'hidden');
+
+      const inputs = page.querySelectorAll('input');
+      inputs.forEach(inp => {
+        const span = document.createElement('span');
+        span.textContent = inp.value || '';
+        span.style.fontFamily = "'EB Garamond', Georgia, serif";
+        span.style.fontSize = '11pt';
+        if (inp.classList.contains('city') || inp.classList.contains('day') || inp.classList.contains('month')) {
+          span.style.borderBottom = '1px solid #333';
+          span.style.display = 'inline-block';
+          span.style.minWidth = inp.offsetWidth + 'px';
+          span.style.textAlign = 'center';
+        }
+        inp.parentNode.insertBefore(span, inp);
+        inp.style.display = 'none';
+        span.dataset.tempSpan = 'true';
+      });
+
+      try {
+        const canvas = await html2canvas(page, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        const imgData = canvas.toDataURL('image/jpeg', 0.95);
+        const pdfW = 210;
+        const pdfH = (canvas.height * pdfW) / canvas.width;
+        pdf.addImage(imgData, 'JPEG', 0, 0, pdfW, Math.min(pdfH, 297));
+        const nombre = document.getElementById('f_nombre').value || 'Entidad';
+        const cleanName = nombre.replace(/[^a-zA-Z0-9áéíóúñÁÉÍÓÚÑ ]/g, '').replace(/\s+/g, '_');
+        pdf.save(`Acta_Formacion_${cleanName}.pdf`);
+      } finally {
+        page.querySelectorAll('[data-temp-span]').forEach(s => s.remove());
+        inputs.forEach(inp => inp.style.display = '');
+        document.querySelectorAll('.clear-btn').forEach(b => b.style.display = '');
+        document.querySelectorAll('.sig-placeholder').forEach(p => p.style.visibility = '');
+      }
+    }
+
+    // Send PDF to formador via Apps Script
+    async function enviarActa() {
+      const nombre = document.getElementById('f_nombre').value.trim();
+      if (!nombre) {
+        showStatus('Por favor, rellene al menos el nombre de la entidad.', 'error');
+        return;
+      }
+
+      if (APPS_SCRIPT_URL === "https://script.google.com/macros/s/AKfycbyWjPsiDdOFCNOpyNmDYqMk1nqQZ--wTrr7iwNsHhe7PuXi10KkgYQbuzzDWbbsHHJp/exec") {
+        showStatus('Error de configuración: falta la URL del servidor. Contacte con el formador.', 'error');
+        return;
+      }
+
+      const btn = document.getElementById('btnEnviar');
+      btn.disabled = true;
+      btn.textContent = '⏳ Enviando...';
+      showStatus('Generando PDF y enviando al formador...', 'loading');
+
+      try {
+        const pdfBase64 = await generatePDFBase64();
+
+        const response = await fetch(APPS_SCRIPT_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'text/plain' },
+          body: JSON.stringify({
+            pdf: pdfBase64,
+            nombre: nombre,
+            nif: document.getElementById('f_nif').value,
+            representante: document.getElementById('f_rep').value,
+            telefono: document.getElementById('f_tel').value,
+            correo: document.getElementById('f_email').value
+          })
+        });
+
+        // With no-cors we can't read the response, but if it didn't throw, it likely worked
+        showStatus('✅ Acta enviada correctamente. El formador recibirá el PDF en su correo. ¡Gracias!', 'success');
+        btn.textContent = '✅ Enviado';
+
+      } catch (error) {
+        showStatus('❌ Error al enviar. Descargue el PDF y envíelo manualmente a alvaro.padilla@serglobin.es', 'error');
+        btn.disabled = false;
+        btn.textContent = '✉ Enviar acta firmada';
+      }
+    }
+
+    function showStatus(msg, type) {
+      const el = document.getElementById('statusMsg');
+      el.className = 'status-msg ' + type;
+      el.textContent = msg;
+    }
+  </script>
+
+</body>
+
+</html>
