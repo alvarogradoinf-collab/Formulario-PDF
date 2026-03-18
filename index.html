@@ -560,7 +560,7 @@
         return;
       }
 
-      if (APPS_SCRIPT_URL === "https://script.google.com/macros/s/AKfycbyWjPsiDdOFCNOpyNmDYqMk1nqQZ--wTrr7iwNsHhe7PuXi10KkgYQbuzzDWbbsHHJp/exec") {
+      if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL.indexOf("script.google.com") === -1) {
         showStatus('Error de configuración: falta la URL del servidor. Contacte con el formador.', 'error');
         return;
       }
