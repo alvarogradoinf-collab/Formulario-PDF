@@ -278,8 +278,14 @@ async function generatePDFBase64() {
     span.dataset.tempSpan = 'true';
   });
 
+  // Force A4 width for consistent PDF regardless of screen size
+  const origStyle = page.getAttribute('style') || '';
+  page.style.width = '794px';
+  page.style.minHeight = '1123px';
+  page.style.padding = '113px 113px 94px 113px';
+
   try {
-    const canvas = await html2canvas(page, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
+    const canvas = await html2canvas(page, { scale: 2, useCORS: true, backgroundColor: '#ffffff', windowWidth: 900 });
     const { jsPDF } = window.jspdf;
     const pdf = new jsPDF('p', 'mm', 'a4');
     const imgData = canvas.toDataURL('image/jpeg', 0.95);
@@ -288,6 +294,7 @@ async function generatePDFBase64() {
     pdf.addImage(imgData, 'JPEG', 0, 0, pdfW, Math.min(pdfH, 297));
     return pdf.output('datauristring').split(',')[1]; // base64 only
   } finally {
+    page.setAttribute('style', origStyle);
     page.querySelectorAll('[data-temp-span]').forEach(s => s.remove());
     inputs.forEach(inp => inp.style.display = '');
     document.querySelectorAll('.clear-btn').forEach(b => b.style.display = '');
@@ -318,8 +325,14 @@ async function downloadPDF() {
     span.dataset.tempSpan = 'true';
   });
 
+  // Force A4 width for consistent PDF regardless of screen size
+  const origStyle = page.getAttribute('style') || '';
+  page.style.width = '794px';
+  page.style.minHeight = '1123px';
+  page.style.padding = '113px 113px 94px 113px';
+
   try {
-    const canvas = await html2canvas(page, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
+    const canvas = await html2canvas(page, { scale: 2, useCORS: true, backgroundColor: '#ffffff', windowWidth: 900 });
     const { jsPDF } = window.jspdf;
     const pdf = new jsPDF('p', 'mm', 'a4');
     const imgData = canvas.toDataURL('image/jpeg', 0.95);
@@ -330,6 +343,7 @@ async function downloadPDF() {
     const cleanName = nombre.replace(/[^a-zA-Z0-9áéíóúñÁÉÍÓÚÑ ]/g, '').replace(/\s+/g, '_');
     pdf.save(`Acta_Formacion_${cleanName}.pdf`);
   } finally {
+    page.setAttribute('style', origStyle);
     page.querySelectorAll('[data-temp-span]').forEach(s => s.remove());
     inputs.forEach(inp => inp.style.display = '');
     document.querySelectorAll('.clear-btn').forEach(b => b.style.display = '');
